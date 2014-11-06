@@ -1,0 +1,43 @@
+# nastav email
+git config --global user.email "<github email>"
+
+# nastav jmeno
+git config --global user.name "<jmeno>"
+
+# naklonuj si repo
+git clone https://github.com/PetrBatek/FreescaleCup.git
+
+--------------------------------------------------------------------------
+# stahni si zmeny ze serveru (udelej vzdy nez zacnes programovat)
+git pull
+
+# ukaz stav
+git status
+
+# pridej soubor do komitu
+git add <filepath>
+
+# odstran soubor
+git rm <filepath>
+
+# vytvor komit
+git commit
+
+# vytvor komit (automaticky pridej vsechny zmenene soubory)
+git commit -a
+
+# vytvor komit (popis z prikazove radky) 
+git commit -m 'popis komitu'
+
+# posly vsechny zmeny (komity) na server (github)
+git push origin master
+
+-------------------------------------------------------------------------
+# vypis komity
+git log
+
+# zrus posledni vytvoreny komit (neupravuje soubory)
+git reset --soft HEAD~1
+
+# vrat zmeny v souborech do stavu v poslednim komitu
+git reset --hard

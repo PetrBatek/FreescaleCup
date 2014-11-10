@@ -46,9 +46,9 @@ local.properties
 # External tool builders
 .externalToolBuilders/
 # Locally stored "Eclipse launch configurations"
-*.launch
+##*.launch # ignoring breaks flash programmer
 # CDT-specific
-.cproject
+##.cproject # ignoring breaks compiling
 # PDT-specific
 .buildpath
 # sbteclipse plugin

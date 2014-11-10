@@ -89,13 +89,43 @@ int main(void)
 					}
 				break;
 			
-			case 3 :
-			
-				//Demo Mode 3 will be in Freescale Garage Mode.  It will beam data from the Camera to the 
-				//Labview Application
+			case 3 : // Camera	
+				// TFC_Ticker[0] == miliseconds ; 1000 == 1s
+				// pro pricitani musim nechat cyklus dobehnout => TFC_Task();
 				
-		
-				if(TFC_Ticker[0]>100 && LineScanImageReady==1)
+				// wait 2s - debug
+				if(TFC_Ticker[0]<2000 || LineScanImageReady!=1){
+					break;
+				}
+				else{
+					TFC_Ticker[0] = 0;
+				}
+				
+				// vypis hodnoty line camery
+				for(i=0;i<128;i++)
+				{
+					TERMINAL_PRINTF("%d,",LineScanImage0[i]);
+					
+					// delay 10ms - pro spravny vypis na seriovy port
+					TFC_Ticker[0] = 0;
+					while(TFC_Ticker[0]<10){
+						TFC_Task();
+					}
+				}
+				TERMINAL_PRINTF("\r\n");
+				
+				/* TODO - oriznout a vyrovnat hodnoty, 
+				 * tak aby mela bila barva na vsech pozicich stejnou hodnotu. 
+				 * (Ted to tvori kopecek)
+				*/
+				
+				// TODO - najit spocitat gradienty
+				
+				// TODO - najit podle gradientu hrany
+				
+				
+			// Originalni kod
+			/*	if(TFC_Ticker[0]>100 && LineScanImageReady==1)
 					{
 					 TFC_Ticker[0] = 0;
 					 LineScanImageReady=0;
@@ -123,7 +153,7 @@ int main(void)
 									 TERMINAL_PRINTF(",",LineScanImage1[i]);
 						}										
 							
-					}
+					}*/
 					
 
 

@@ -19,13 +19,4 @@ A = [a1;a2;a3;a4;a5;a6;a7;a8;a9;a10;a11;a12];
 
 stredni_hodnota = median(A);
 
-figure;
-plot(stredni_hodnota)
-title('originalni data')
-
-% Oseknuti
-stredni_hodnota = camera_fix(stredni_hodnota,'cut')
-
-figure;
-plot(stredni_hodnota)
-title('oseknuta data')
+camera_plot_data(stredni_hodnota)

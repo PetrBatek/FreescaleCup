@@ -1,5 +1,5 @@
 % idealne bily povrch a idealne cerne postrani cary, lehce horsi osviceni,
-% uhel proti plose je priblizne 45 stupnu
+% vzdalenost od plochy 27cm, uhel proti plose je priblizne 45 stupnu
 
 % vzdalenost car 18cm, tloustka cary 1.5cm
 

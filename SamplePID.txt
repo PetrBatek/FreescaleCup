@@ -1,0 +1,221 @@
+https://sites.google.com/site/ankur2136project/undergraduate-projects/pid-controlled-line-follower/Implementation-Code
+
+//*******************Header Files**************************************//
+#include<hidef.h>
+#include "derivative.h"
+ 
+void Delay(unsigned char a);
+ 
+int kp=.28, ki=.03, kd=.51;
+ 
+//*******************Main Function************************************//
+void main(void)
+                {
+               
+  int flag;
+  long int white[7]={50,50,50,50,50,50,50};                           //typical white values for the sensors
+  long int black[7]={122,221,221,223,223,232,122};            //typical black values for the sensors
+  signed int compen_ratio[7];
+ 
+  int i_error[10]= { 0,0,0,0,0,0,0,0,0,0};                                 //stores error values of last 10 iterations for I control 
+  int i_counter=0, sum_i_error=0;
+  int turn;                                                                                   
+  unsigned char i,j;
+  signed long int position,error,error_old=0,zero=0,error_diff,temp;
+  signed int input_sensor[7],compensated_sensor[2][7];
+  signed long int error1, error2;
+ 
+               
+  for(i=0;i<7;i++){                                                                 // calculation of compensation ratio of 7 sensors
+      compen_ratio[i]=2560/(black[i]-white[i]);
+  }
+   
+ 
+                //initialize PWM for DC motor
+ 
+                           
+for(;;)                                                                          //infinite loop
+ 
+{
+        
+               ATD0CTL1=0x87;                                    // no external trigger
+                ATD0CTL2_ADPU=1;                              // ATD Enable
+                ATD0CTL2_ETRIGE=0;                          // no external trigger
+                ATD0CTL3_S8C=1;                                 // 8 adc channels sequence
+                ATD0CTL4_SRES8=1;                            // 8-bit Resolution
+                ATD0CTL5=0x10;                                   //PWM channel 1 Enable       
+//*********************Get the values of sensors************************//
+ 
+ input_sensor[0] =ATD0DR0H;
+ input_sensor[1] =ATD0DR1H;
+ input_sensor[2] =ATD0DR2H;
+ input_sensor[3] =ATD0DR3H;
+ input_sensor[4] =ATD0DR4H;
+ input_sensor[5] =ATD0DR5H;
+ input_sensor[6] =ATD0DR6H;
+    
+     
+//**************Calculate the compensated value of sensors****************//     
+ for(i=0;i<7;i++)
+                {
+                compensated_sensor[0][i]=(input_sensor[i]-white[i])*compen_ratio[i];
+                compensated_sensor[0][i]/=10;
+                compensated_sensor[1][i]=i;
+                }
+               
+ 
+ 
+//****calculate the sorted value of calibrated sensor inputs along with indices*****//
+ 
+                for(i=0;i<7;i++)
+                {
+                  for(j=i;j<7;j++)
+                    {
+                       if (compensated_sensor[0][i]<compensated_sensor[0][j])
+                       {
+                       temp=compensated_sensor[0][i];
+                       compensated_sensor[0][i]=compensated_sensor[0][j];
+                       compensated_sensor[0][j]=temp;
+                       temp=compensated_sensor[1][i];
+                       compensated_sensor[1][i]=compensated_sensor[1][j];
+                       compensated_sensor[1][j]=temp;
+                       }
+                    }
+                }
+     
+     
+ 
+//***********sort top 3 values of indices***************//
+  for(i=0;i<3;i++) {
+   
+     for(j=i;j<3;j++){
+     
+      if(compensated_sensor[1][i]>compensated_sensor[1][j]) {
+         temp=compensated_sensor[0][i];
+                       compensated_sensor[0][i]=compensated_sensor[0][j];
+                       compensated_sensor[0][j]=temp;
+                       temp=compensated_sensor[1][i];
+                       compensated_sensor[1][i]=compensated_sensor[1][j];
+                       compensated_sensor[1][j]=temp;
+      }
+     }
+  }
+       
+   
+               
+                error=compensated_sensor[0][2]-compensated_sensor[0][0];                            //calculates the error
+ 
+                position=compensated_sensor[1][1]*512 + error;
+                error=1536-position;                                                                                                     //Final error
+               
+//****************I control*****************************//
+ 
+sum_i_error =sum_i_error - i_error[i_counter];
+sum_i_error =sum_i_error + error;
+i_error[i_counter%10]=error;
+i_counter++;
+ 
+if (i_counter==10)
+     i_counter=0;
+                
+ 
+//****************D- control*****************************//   
+ 
+error_diff = error-error_old;
+ 
+ 
+turn = error*kp +error_diff*kd + sum_i_error*ki; 
+error_old=error;
+   
+    if(turn<0) {             //left turning
+   
+      flag=0;
+      PWMDTY0=75+(turn/37);
+      PWMDTY1=0;
+      pwmservo= 1415 + (turn)*35/100;    
+    }
+  
+    else {                          //right turning
+       flag=1;
+       PWMDTY0=75-(turn/37);
+       PWMDTY1=0;
+       pwmservo= 1415 + (turn)*41/100;    
+    }
+PWMDTY3= pwmservo1 & 255;
+PWMDTY2= pwmservo1 >> 8;
+ 
+                }
+      }
+}                                                                                                          //end of main
+ 
+ 
+ 
+//**************Delay Function***********************//
+void Delay(unsigned char a)
+ {
+unsigned int i,j;
+for(j=1;j<=a;j++)         
+     for(i=0;i<=5000;i++);
+}
+
+
+******************************************************/
+/**
+* @file hidef.h
+* Machine/compiler dependent declarations.
+*/
+/*----------------------------------------------------
+   Copyright (c) Freescale DevTech
+               All rights reserved
+                  Do not modify!
+ *****************************************************/
+
+#ifndef _H_HIDEF_
+#define _H_HIDEF_
+
+#ifdef __cplusplus
+        extern "C" {
+#endif
+
+#if defined(__CWCC__)
+        #pragma gcc_extensions on
+
+        /**** Version for ColFire V1 */
+        #include <stddef.h>
+        #include "types.h"
+
+        /*!< Macro to enable all interrupts. */
+        #define EnableInterrupts asm ("CPSIE  i")
+  
+        /*!< Macro to disable all interrupts. */
+        #define DisableInterrupts asm ("CPSID  i")
+  
+#elif defined(__IAR_SYSTEMS_ICC__)
+        #include <intrinsics.h>
+
+        #define EnableInterrupts  __enable_interrupt();
+        #define DisableInterrupts __disable_interrupt();
+
+#elif defined (__CC_ARM)
+        #define EnableInterrupts  __enable_irq();
+        #define DisableInterrupts __disable_irq();
+
+#elif defined (__GNUC__)
+        #include <stddef.h>
+        #include "types.h"
+        
+        /*!< Macro to enable all interrupts. */
+        #define EnableInterrupts asm ("CPSIE  i")
+        
+        /*!< Macro to disable all interrupts. */
+        #define DisableInterrupts asm ("CPSID  i")
+#endif
+
+#ifdef __cplusplus
+        }
+#endif
+
+#endif
+
+/*****************************************************/
+/* end hidef.h */

@@ -14,6 +14,7 @@ title('1. Odstraneni spatnych fotoclanku');
 
 % Oseknuti
 data = camera_fix(data,'cut');
+oseknuta_data = data;
 
 figure;
 plot(data);
@@ -48,3 +49,20 @@ figure;
 plot(gradient);
 title('6. Cut Gradent');
 axis([0, length(gradient), -1.2, 1.2]);
+
+% Detect lines
+lines = camera_fix(gradient,'detect lines')
+
+figure;
+plot(oseknuta_data);
+title('7. detekce car');
+hold on;
+
+for i = 1:length(lines(:,1)) 
+    line([lines(i,1) lines(i,1)], [min(oseknuta_data) max(oseknuta_data)], 'Color', 'red');
+    line([lines(i,2) lines(i,2)], [min(oseknuta_data) max(oseknuta_data)], 'Color', 'red');
+end
+
+
+
+

@@ -52,7 +52,7 @@ switch stage
         
         % zleva
         for i = 1:l
-            if out(i)~=0
+            if out(i)>0
                 out(i) = 0;
             else
                 break;
@@ -61,12 +61,48 @@ switch stage
         
         % zprava
         for i = fliplr(1:l)
-            if out(i)~=0
+            if out(i)<0
                 out(i) = 0;
             else
                 break;
             end
         end
+        
+    case 'detect lines' % detekuje cerne pruhy
+        l = length(in);
+        
+        min_to_zero = []; % pozice kde se -1 mneni na 0
+        zero_to_max = []; % pozice kde se 0 mneni na 1 
+        for i = 1:(l-1)
+            if in(i) == -1 && in(i+1) == 0
+                min_to_zero = [min_to_zero,i];
+            elseif in(i) == 0 && in(i+1) == 1
+                zero_to_max = [zero_to_max,i];
+            end
+        end
+        
+        lines = [];
+        
+        if length(min_to_zero)>=1
+            for i = 1:length(min_to_zero)-1
+                for n = 1:length(zero_to_max)
+                    if zero_to_max(n) > min_to_zero(i) && zero_to_max(n) < min_to_zero(i+1)
+                        lines = [lines; min_to_zero(i), zero_to_max(n)];
+                        break
+                    end
+                end
+            end
+            
+            % posledni skok na 0
+            for n = 1:length(zero_to_max)
+                if zero_to_max(n) > min_to_zero(length(min_to_zero))
+                    lines = [lines; min_to_zero(length(min_to_zero)), zero_to_max(n)];
+                    break
+                end
+            end
+        end
+        
+        out = lines;
 end
 
 end

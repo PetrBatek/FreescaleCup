@@ -8,6 +8,8 @@
 #ifndef FC_CAMERA_H_
 #define FC_CAMERA_H_
 
-extern int * fcc_get_line_data(void);
+#include <string.h>
+
+extern struct return_struct fcc_get_line_data(int raw_camera_line[128]);
 
 #endif /* FC_CAMERA_H_ */

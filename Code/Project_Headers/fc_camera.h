@@ -15,6 +15,8 @@ struct return_struct{
 	unsigned int lines[10][2];
 };
 
+static void fcc_debug_print_array(int data[128], char name[]);
+
 extern struct return_struct fcc_get_line_data(int raw_camera_line[128]);
 
 #endif /* FC_CAMERA_H_ */

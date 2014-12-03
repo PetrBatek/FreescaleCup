@@ -1,6 +1,6 @@
 #include "fc_camera.h"
 
-static int fcc_debug = 1;
+static int fcc_debug = 0;
 
 static unsigned int fcc_cut_down = 14;
 static unsigned int fcc_cut_top = 16;
@@ -14,6 +14,20 @@ static void fcc_debug_print_array(int data[128], char name[]){
             printf("%d ", data[i]);
         printf("\n\n");
         }
+    }
+    
+static void fcc_debug_print_array_d(double data[128], char name[]){
+    if (fcc_debug == 1){      
+        unsigned int i = 0;
+        printf("%s:\n", name);
+        for (i=0; i<128; i++)
+            printf("%g ", data[i]);
+        printf("\n\n");
+        }
+    }
+    
+extern void fcc_set_debug(int debug_mode){
+    fcc_debug = debug_mode;
     }
 
 extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
@@ -55,10 +69,12 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 		data_help[i] = (data_cut[i-1]+data_cut[i]+data_cut[i+1])/3;
 	}
 	memcpy(data_cut, data_help, a_len*sizeof(data_help[0]));
+    
+    fcc_debug_print_array(data_cut, "Smoothed");
 	
 	/** get gradient **/
 	unsigned int min,max;
-	double data_gradient[127] = { 0 }; // gradients ; 97 ; (128 - fcc_cut_down - fcc_cut_top - 1)
+	double data_gradient[128] = { 0 }; // gradients ; 97 ; (128 - fcc_cut_down - fcc_cut_top - 1)
 	
 	// nastav minimalni hodnotu na 0
 	min = data_cut[0];
@@ -79,6 +95,8 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 	for(i = 0; i<a_len-1; i++){
 		data_gradient[i] = ((double)data_cut[i+1] - (double)data_cut[i])/(double)max;
 	}
+    
+    fcc_debug_print_array_d(data_gradient, "Get_Gradient");
 	
 	/** filter gradient **/
 	for(i = 0; i<a_len-1; i++){
@@ -92,6 +110,8 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 			data_gradient[i] = 0;
 		}
 	}
+    
+    fcc_debug_print_array_d(data_gradient, "Filter_Gradient");
 	
 	/** cut gradient **/
 	// odstrani poklesy na stranach
@@ -113,6 +133,8 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 			break;
 		}
 	}
+    
+    fcc_debug_print_array_d(data_gradient, "Cut_Gradient");
 	
 	/** detect lines **/
 	unsigned int fcc_lines[10][2] = { 0 }; // fcc_lines[0][0] == number of lines
@@ -154,13 +176,13 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 		}
 	}
 	
-	/** posun pozice car na puvodni indexy **/
+	// posun pozice car na puvodni indexy
 	for (i = 1; i< fcc_lines[0][0]+1; i++){
 		fcc_lines[i][0] += fcc_cut_down;
 		fcc_lines[i][1] += fcc_cut_down;
 	}
     
-    /** debug **/
+    // debug - print fcc_lines
     if (fcc_debug == 1){
         printf("Printing lines array:\n");
         for (i=0; i<10; i++){

@@ -1,12 +1,10 @@
 #include "fc_camera.h"
 
+int fcc_debug = 1;
+
 unsigned int fcc_cut_down = 14;
 unsigned int fcc_cut_top = 16;
 double fcc_gradient_threshold = 0.03;
-
-struct return_struct{
-	unsigned int lines[10][2];
-};
 
 extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 	/** init + clean static values **/
@@ -21,7 +19,7 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 	fcc_raw_data[39] = (fcc_raw_data[38]+fcc_raw_data[40])/2;
 	fcc_raw_data[73] = (fcc_raw_data[72]+fcc_raw_data[74])/2;
 	
-	// cut bad side values **/
+	/** cut bad side values **/
 	unsigned int a_len = 128 - fcc_cut_down - fcc_cut_top; // 98 ; 128 - fcc_cut_down - fcc_cut_top
 	unsigned int data_cut[a_len]; 
 	
@@ -100,11 +98,12 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 	
 	/** detect lines **/
 	unsigned int fcc_lines[10][2]; // fcc_lines[0][0] == number of lines
-	// detekuje cerne pruhy
+    fcc_lines[0][0] = 0;
 	unsigned int min_to_zero[20];  // pozice kde se -1 mneni na 0
 	unsigned int min_to_zero_len = 0; 
 	unsigned int zero_to_max[20]; // pozice kde se 0 mneni na 1 
 	unsigned int zero_to_max_len = 0; 
+    // TODO - set values of arrays to 0s, else inits with high numbers?????
 	
 	for(i = 0; i<a_len-2; i++){
 		if (data_gradient[i] == -1 && data_gradient[i+1] == 0 && min_to_zero_len < 20){
@@ -122,7 +121,7 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 				if (zero_to_max[n] > min_to_zero[i] && zero_to_max[n] < min_to_zero[i+1]){
 					fcc_lines[fcc_lines[0][0]+1][0] = min_to_zero[i];
 					fcc_lines[fcc_lines[0][0]+1][1] = zero_to_max[n];
-					fcc_lines[0][0]++;
+					fcc_lines[0][0]+=1;
 					break;
 				}
 			}
@@ -133,7 +132,7 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 			if (zero_to_max[n] > min_to_zero[min_to_zero_len-1]){
 				fcc_lines[fcc_lines[0][0]+1][0] = min_to_zero[min_to_zero_len-1];
 				fcc_lines[fcc_lines[0][0]+1][1] = zero_to_max[n];
-				fcc_lines[0][0]++;
+				fcc_lines[0][0]+=1;
 				break;
 			}
 		}
@@ -144,12 +143,23 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 		fcc_lines[i][0] += fcc_cut_down;
 		fcc_lines[i][1] += fcc_cut_down;
 	}
+    
+    /** debug **/
+    if (fcc_debug == 1){
+        printf("Printing lines array:\n");
+        for (i=0; i<10; i++){
+            for (n=0; n<2; n++){
+                printf("%d ", fcc_lines[i][n]);
+            }
+            printf("\n");
+        }
+    }
 	
 	/** return array with results **/
 	struct return_struct temp;
 	memcpy(temp.lines, fcc_lines, 20); // TODO - zjistit jestli je 20 spravna velikost
-	
-	return temp;
+    
+    return temp; //TODO - Segmentation fault
 }
 
 

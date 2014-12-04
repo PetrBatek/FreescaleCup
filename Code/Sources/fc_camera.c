@@ -30,7 +30,7 @@ extern void fcc_set_debug(int debug_mode){
     fcc_debug = debug_mode;
     }
 
-extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
+extern struct fcc_return_struct fcc_get_line_data(int raw_camera_line[128]){
 	/** init + clean static values **/
 	unsigned int i,n = 0;
 	
@@ -137,7 +137,8 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
     fcc_debug_print_array_d(data_gradient, "Cut_Gradient");
 	
 	/** detect lines **/
-	unsigned int fcc_lines[10][2] = { 0 }; // fcc_lines[0][0] == number of lines
+	unsigned int fcc_lines[10][2] = { 0 }; 
+    unsigned int lines_num = 0;
 	unsigned int min_to_zero[20] = { 0 };  // pozice kde se -1 mneni na 0
 	unsigned int min_to_zero_len = 0; 
 	unsigned int zero_to_max[20] = { 0 }; // pozice kde se 0 mneni na 1 
@@ -156,45 +157,40 @@ extern struct return_struct fcc_get_line_data(int raw_camera_line[128]){
 	if (min_to_zero_len >=1){
 		for (i = 0; i<min_to_zero_len-1; i++){
 			for (n = 0; n<zero_to_max_len; n++){
-				if (zero_to_max[n] > min_to_zero[i] && zero_to_max[n] < min_to_zero[i+1]){
-					fcc_lines[fcc_lines[0][0]+1][0] = min_to_zero[i];
-					fcc_lines[fcc_lines[0][0]+1][1] = zero_to_max[n];
-					fcc_lines[0][0]+=1;
+                if (lines_num>=9){
+                    break; // lines array is full
+                }
+				else if (zero_to_max[n] > min_to_zero[i] && zero_to_max[n] < min_to_zero[i+1]){
+					fcc_lines[lines_num][0] = min_to_zero[i];
+					fcc_lines[lines_num][1] = zero_to_max[n];
+					lines_num+=1;
 					break;
 				}
 			}
 		}
-		
-		// posledni skok na 0
-		for (n = 0; n<zero_to_max_len; n++){
-			if (zero_to_max[n] > min_to_zero[min_to_zero_len-1]){
-				fcc_lines[fcc_lines[0][0]+1][0] = min_to_zero[min_to_zero_len-1];
-				fcc_lines[fcc_lines[0][0]+1][1] = zero_to_max[n];
-				fcc_lines[0][0]+=1;
-				break;
-			}
-		}
+        
+        if (lines_num<9){ // lines array is not full
+            // posledni skok na 0
+            for (n = 0; n<zero_to_max_len; n++){
+                if (zero_to_max[n] > min_to_zero[min_to_zero_len-1]){
+                    fcc_lines[lines_num][0] = min_to_zero[min_to_zero_len-1];
+                    fcc_lines[lines_num][1] = zero_to_max[n];
+                    lines_num+=1;
+                    break;
+                }
+            }
+        }
 	}
 	
 	// posun pozice car na puvodni indexy
-	for (i = 1; i< fcc_lines[0][0]+1; i++){
+	for (i = 0; i< lines_num; i++){
 		fcc_lines[i][0] += fcc_cut_down;
 		fcc_lines[i][1] += fcc_cut_down;
 	}
-    
-    // debug - print fcc_lines
-    if (fcc_debug == 1){
-        printf("Printing lines array:\n");
-        for (i=0; i<10; i++){
-            for (n=0; n<2; n++){
-                printf("%d ", fcc_lines[i][n]);
-            }
-            printf("\n");
-        }
-    }
 	
 	/** return array with results **/
-	struct return_struct temp;
+	struct fcc_return_struct temp;
+    temp.lines_num = lines_num;
 	memcpy(temp.lines, fcc_lines, 20*sizeof(fcc_lines[0][0])); // TODO - zjistit jestli je 20 spravna velikost
     
     return temp; 

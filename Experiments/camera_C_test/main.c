@@ -15,8 +15,19 @@ int main( int argc, const char* argv[] )
     
     fcc_set_debug(1);
     
-    struct return_struct temp;
+    struct fcc_return_struct temp;
     temp = fcc_get_line_data(test_data);
+    
+    // lines
+    printf("Number of lines: %d\n", temp.lines_num);
+    printf("Printing lines array:\n");
+    int i,n;
+    for (i=0; i<10; i++){
+        for (n=0; n<2; n++){
+            printf("%d ", temp.lines[i][n]);
+        }
+        printf("\n");
+    }
     
     return 0;
 }

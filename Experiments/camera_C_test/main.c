@@ -8,9 +8,10 @@ int main( int argc, const char* argv[] )
     /** expected results: (matlab)
     lines_num = 2
     
+    // edited becouse matlab starts indexes at 1
     lines =
-        34    38
-        75    79
+        33    37
+        74    78
     **/
     
     fcc_set_debug(1);

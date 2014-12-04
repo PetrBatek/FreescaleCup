@@ -18,6 +18,7 @@ a8 = [228,231,230,251,256,334,408,518,613,718,795,898,972,1075,1145,1247,1326,14
 
 A = [a1;a2;a3;a4;a5;a6;a7;a8];
 
-stredni_hodnota = median(A);
+%stredni_hodnota = median(A);
+stredni_hodnota = a1;
 
 camera_plot_data(stredni_hodnota);

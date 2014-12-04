@@ -44,8 +44,8 @@ extern struct fcc_return_struct fcc_get_line_data(int raw_camera_line[128]){
 	
 	/** fix bad photocels **/
 	// propad hodnoty - nahradime je prumerem okolnich hodnot
-	fcc_raw_data[39] = (fcc_raw_data[38]+fcc_raw_data[40])/2;
-	fcc_raw_data[73] = (fcc_raw_data[72]+fcc_raw_data[74])/2;
+	fcc_raw_data[38] = (fcc_raw_data[37]+fcc_raw_data[39])/2;
+	fcc_raw_data[72] = (fcc_raw_data[71]+fcc_raw_data[73])/2;
     
     fcc_debug_print_array(fcc_raw_data, "Fix_Bad_Photocels");
 	
@@ -53,7 +53,7 @@ extern struct fcc_return_struct fcc_get_line_data(int raw_camera_line[128]){
 	unsigned int a_len = 128 - fcc_cut_down - fcc_cut_top; // 98 ; 128 - fcc_cut_down - fcc_cut_top
 	unsigned int data_cut[128] = { 0 };             
 	
-	for(i = 0; i<(128-fcc_cut_top); i++){
+	for(i = 0; i<(128-fcc_cut_top-fcc_cut_down); i++){
 		data_cut[i] = fcc_raw_data[i+fcc_cut_down];
 	}
     
@@ -125,7 +125,7 @@ extern struct fcc_return_struct fcc_get_line_data(int raw_camera_line[128]){
 		}
 	}
 	// zprava
-	for(i = a_len-1; i>=0; i--){
+	for(i = a_len-2; i>=0; i--){
 		if (data_gradient[i] < 0){
 			data_gradient[i] = 0;
 		}
@@ -153,6 +153,16 @@ extern struct fcc_return_struct fcc_get_line_data(int raw_camera_line[128]){
 			zero_to_max_len++;
 		}
 	}
+    
+    if (fcc_debug == 1){
+        printf("min_to_zero:\n");
+        for (i = 0; i<20; i++)
+            printf("%d, ", min_to_zero[i]);
+        printf("\nzero_to_max:\n");
+        for (i = 0; i<20; i++)
+            printf("%d, ", zero_to_max[i]);
+        printf("\n\n");        
+    }
 	
 	if (min_to_zero_len >=1){
 		for (i = 0; i<min_to_zero_len-1; i++){

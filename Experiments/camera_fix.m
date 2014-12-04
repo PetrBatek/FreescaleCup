@@ -81,6 +81,9 @@ switch stage
             end
         end
         
+        min_to_zero
+        zero_to_max
+        
         lines = [];
         
         if length(min_to_zero)>=1
